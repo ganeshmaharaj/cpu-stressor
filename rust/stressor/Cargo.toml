@@ -1,0 +1,16 @@
+[package]
+name = "stressor-rust"
+version = "0.1.0"
+authors = ["Ganesh Maharaj Mahalingam <gmmaharaj@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "stressor-rust"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+core_affinity = "0.5.10"
+rand = "0.8.3"
+thread-id = "3.3.0"
