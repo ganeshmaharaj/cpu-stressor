@@ -1,22 +1,25 @@
 use rand::{Rng, distributions::Standard};
-use std::thread;
+use std::{thread,mem};
 use thread_id;
+use procinfo::pid;
 //use rand::distributions::Alphanumeric;
 
-const MAXBUFFSIZE: i32 = 128 * 1024 * 1024;
+const MAXBUFFSIZE: i32 = 512 * 1024 * 1024;
 const BUFFSIZE: i32 = 16;
 
 fn populate_vectors() {
     let mut mvec: Vec<u8> = Vec::new();
     let mut done: i32 = 0;
+    let mut count :i32 = 0;
     loop {
         if MAXBUFFSIZE - done < 16 { break; }
 
         mvec.append(&mut rand::thread_rng().sample_iter(Standard).take(BUFFSIZE as usize).collect());
         done = done + BUFFSIZE;
+        count += 1;
     }
-    println!("Length of Vector {:?}", mvec.len());
-    println!("{:?}", thread_id::get());
+    println!("Length of Vector {:?} in thread {:?} over count {:?}", mem::size_of_val(&*mvec), thread_id::get(), count);
+    println!("Total memory usage : {:?}", pid::statm_self());
 }
 
 fn main() {
@@ -28,7 +31,7 @@ fn main() {
     //    populate_vectors();
     //});
     //handle.join().unwrap();
-    
+
     let core_ids = core_affinity::get_core_ids().unwrap();
     let handles = core_ids.into_iter().map(|id| {
         thread::spawn(move || {
