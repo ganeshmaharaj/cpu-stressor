@@ -1,24 +1,30 @@
 use rand::{Rng, distributions::Standard};
-use std::{thread,mem};
+use std::{thread,time::Instant};
 use thread_id;
 use procinfo::pid;
 //use rand::distributions::Alphanumeric;
 
-const MAXBUFFSIZE: i32 = 512 * 1024 * 1024;
-const BUFFSIZE: i32 = 16;
+const MAXBUFFSIZE: i32 = 64 * 1024 * 1024;
+const BUFFSIZE: i32 = 64;
+const TEST_DURATION: u64 = 60;
 
 fn populate_vectors() {
     let mut mvec: Vec<u8> = Vec::new();
     let mut done: i32 = 0;
-    let mut count :i32 = 0;
-    loop {
-        if MAXBUFFSIZE - done < 16 { break; }
+    let start_time = Instant::now();
+    while start_time.elapsed().as_secs() < TEST_DURATION {
+        while MAXBUFFSIZE - done > BUFFSIZE {
 
-        mvec.append(&mut rand::thread_rng().sample_iter(Standard).take(BUFFSIZE as usize).collect());
-        done = done + BUFFSIZE;
-        count += 1;
+            mvec.append(&mut rand::thread_rng().sample_iter(Standard).take(BUFFSIZE as usize).collect());
+            done = done + BUFFSIZE;
+        }
+        //println!("Length of Vector {:?} in thread {:?} over count {:?}", mem::size_of_val(&*mvec), thread_id::get(), count);
+        // Flush the vector to free up memory
+        done = 0;
+        mvec.drain(..);
+        mvec.shrink_to_fit();
     }
-    println!("Length of Vector {:?} in thread {:?} over count {:?}", mem::size_of_val(&*mvec), thread_id::get(), count);
+    println!("Elapsed time: {:?}", start_time.elapsed().as_secs());
     println!("Total memory usage : {:?}", pid::statm_self());
 }
 
