@@ -10,17 +10,14 @@ const TEST_DURATION: u64 = 60;
 
 fn populate_vectors() {
     let mut mvec: Vec<u8> = Vec::new();
-    let mut done: i32 = 0;
     let start_time = Instant::now();
     while start_time.elapsed().as_secs() < TEST_DURATION {
-        while MAXBUFFSIZE - done > BUFFSIZE {
+        for _ in 0..(MAXBUFFSIZE/BUFFSIZE) {
 
             mvec.append(&mut rand::thread_rng().sample_iter(Standard).take(BUFFSIZE as usize).collect());
-            done = done + BUFFSIZE;
         }
         //println!("Length of Vector {:?} in thread {:?} over count {:?}", mem::size_of_val(&*mvec), thread_id::get(), count);
         // Flush the vector to free up memory
-        done = 0;
         mvec.drain(..);
         mvec.shrink_to_fit();
     }
@@ -46,7 +43,7 @@ fn main() {
         })
     }).collect::<Vec<_>>();
 
-    for handle in handles.into_iter() {
+    for handle in handles {
         handle.join().unwrap();
     }
     println!("Master thread :: {:?}", thread_id::get());
